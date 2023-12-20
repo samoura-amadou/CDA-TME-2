@@ -1,0 +1,324 @@
+package algorithms;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+
+import supportGUI.Circle;
+import supportGUI.Line;
+
+public class DefaultTeam {
+
+  // calculDiametre: ArrayList<Point> --> Line
+  //   renvoie une paire de points de la liste, de distance maximum.
+  public Line calculDiametre(ArrayList<Point> points) {
+    if (points.size() < 3) {
+      return null;
+    }
+
+    Point p = points.get(0);
+    Point q = points.get(1);
+
+    /*******************
+     * PARTIE A ECRIRE *
+     *******************/
+    return new Line(p, q);
+  }
+
+  // calculDiametreOptimise: ArrayList<Point> --> Line
+  //   renvoie une paire de points de la liste, de distance maximum.
+  public Line calculDiametreOptimise(ArrayList<Point> points) {
+    if (points.size() < 3) {
+      return null;
+    }
+
+    Point p = points.get(1);
+    Point q = points.get(2);
+
+    /*******************
+     * PARTIE A ECRIRE *
+     *******************/
+    return new Line(p, q);
+  }
+
+  // calculCercleMin: ArrayList<Point> --> Circle
+  //   renvoie un cercle couvrant tout point de la liste, de rayon minimum.
+  public Circle calculCercleMin(ArrayList<Point> points) {
+    if (points.isEmpty()) {
+      return null;
+    }
+
+    Point center = points.get(0);
+    int radius = 100;
+
+    /*******************
+     * PARTIE A ECRIRE *
+     *******************/
+    return new Circle(center, radius);
+  }
+
+  // enveloppeConvexe: ArrayList<Point> --> ArrayList<Point>
+  //   renvoie l'enveloppe convexe de la liste.
+  public ArrayList<Point> enveloppeConvexe(ArrayList<Point> points) {
+    if (points.size() < 3) {
+      return null;
+    }
+
+    ArrayList<Point> enveloppe = new ArrayList<Point>();
+
+    enveloppe.add(points.get(0));
+    enveloppe.add(points.get(1));
+    enveloppe.add(points.get(2));
+
+    /*******************
+     * PARTIE A ECRIRE *
+     *******************/
+    return exercice1(points);
+  }
+
+  // Exercice 2 - Tri par pixel
+  // (Adaptation des méthodes existantes)
+  // ... (Voir la démonstration et l'implémentation dans la réponse précédente)
+
+  // Exercice 3 - Filtrage Akl-Toussaint
+  // (Pas d'implémentation spécifique ici, car la question concerne l'avantage de l'application simultanée avec le tri par pixel)
+
+
+  // enveloppeConvexeTriPixel: ArrayList<Point> --> ArrayList<Point>
+  //   renvoie l'enveloppe convexe de la liste en utilisant le tri par pixel.
+  public ArrayList<Point> enveloppeConvexeTriPixel(ArrayList<Point> points) {
+    if (points.size() < 3) {
+      return null;
+    }
+
+    // Filtrage des points ayant les mêmes abscisses
+    filterSameX(points);
+
+    // Tri par pixel
+    Collections.sort(points, (p1, p2) -> Integer.compare(p1.y, p2.y));
+
+    // Algorithme naïf pour calculer l'enveloppe convexe
+    return exercice1(points);
+  }
+
+  // Méthode de filtrage des points ayant les mêmes abscisses
+  private void filterSameX(ArrayList<Point> points) {
+    // Utilisation d'un HashSet pour stocker les abscisses uniques
+    HashSet<Integer> uniqueX = new HashSet<>();
+
+    // Liste temporaire pour stocker les points filtrés
+    ArrayList<Point> filteredPoints = new ArrayList<>();
+
+    for (Point point : points) {
+      if (uniqueX.add(point.x)) {
+        filteredPoints.add(point);
+      }
+    }
+
+    // Mise à jour de la liste points avec les points filtrés
+    points.clear();
+    points.addAll(filteredPoints);
+  }
+
+
+  // Exercice 4 - Algorithme Jarvis
+  // ... (Implémentation de l'algorithme Jarvis)
+  public ArrayList<Point> enveloppeConvexeJarvis(ArrayList<Point> points) {
+    if (points.size() < 3) {
+      return null;
+    }
+
+    ArrayList<Point> enveloppe = new ArrayList<>();
+
+    // Trouver le point avec l'abscisse minimale (le point le plus à gauche)
+    Point startPoint = findLeftmostPoint(points);
+    enveloppe.add(startPoint);
+
+    Point currentPoint = startPoint;
+
+    do {
+      Point nextPoint = findNextPointJarvis(points, currentPoint);
+      enveloppe.add(nextPoint);
+      currentPoint = nextPoint;
+    } while (!currentPoint.equals(startPoint));
+
+    return enveloppe;
+  }
+
+  private Point findNextPointJarvis(ArrayList<Point> points, Point currentPoint) {
+    Point nextPoint = null;
+
+    for (Point candidate : points) {
+      if (nextPoint == null || isRightTurn(currentPoint, nextPoint, candidate)) {
+        nextPoint = candidate;
+      }
+    }
+
+    return nextPoint;
+  }
+
+  private boolean isRightTurn(Point a, Point b, Point c) {
+    int crossProduct = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+    return crossProduct < 0;
+  }
+
+  private Point findLeftmostPoint(ArrayList<Point> points) {
+    Point leftmost = points.get(0);
+    for (Point point : points) {
+      if (point.x < leftmost.x) {
+        leftmost = point;
+      }
+    }
+    return leftmost;
+  }
+
+  // Exercice 5 - Algorithme Graham (modifié)
+  // ... (Implémentation de l'algorithme Graham)
+  public ArrayList<Point> enveloppeConvexeGraham(ArrayList<Point> points) {
+    if (points.size() < 3) {
+      return null;
+    }
+
+    // Filtrage des points ayant les mêmes abscisses
+    filterSameX(points);
+
+    // Tri par pixel
+    Collections.sort(points, (p1, p2) -> Integer.compare(p1.y, p2.y));
+
+    // Tri selon l'angle polar
+    Collections.sort(points, (p1, p2) -> {
+      double angle1 = Math.atan2(p1.y - points.get(0).y, p1.x - points.get(0).x);
+      double angle2 = Math.atan2(p2.y - points.get(0).y, p2.x - points.get(0).x);
+      return Double.compare(angle1, angle2);
+    });
+
+    // Algorithme de Graham modifié
+    ArrayList<Point> convexHull = new ArrayList<>();
+    convexHull.add(points.get(0));
+    convexHull.add(points.get(1));
+
+    for (int i = 2; i < points.size(); i++) {
+      while (isRightTurn(convexHull.get(convexHull.size() - 2), convexHull.get(convexHull.size() - 1), points.get(i))) {
+        convexHull.remove(convexHull.size() - 1);
+      }
+      convexHull.add(points.get(i));
+    }
+
+    return convexHull;
+  }
+
+  // Exercice 6 - Algorithme QuickHull
+  // ... (Implémentation de l'algorithme QuickHull)
+  public ArrayList<Point> enveloppeConvexeQuickHull(ArrayList<Point> points) {
+    if (points.size() < 4) {
+      return null;
+    }
+
+    // Filtrage Akl-Toussaint
+    ArrayList<Point> filteredPoints = filterAklToussaint(points);
+
+    // Enveloppe convexe initiale avec les points filtrés
+    ArrayList<Point> convexHull = new ArrayList<>();
+    convexHull.add(filteredPoints.get(0));
+    convexHull.add(filteredPoints.get(1));
+    convexHull.add(filteredPoints.get(2));
+    convexHull.add(filteredPoints.get(3));
+
+    // Application de l'algorithme QuickHull
+    quickHull(filteredPoints, convexHull.get(0), convexHull.get(1), convexHull);
+    quickHull(filteredPoints, convexHull.get(1), convexHull.get(2), convexHull);
+    quickHull(filteredPoints, convexHull.get(2), convexHull.get(3), convexHull);
+    quickHull(filteredPoints, convexHull.get(3), convexHull.get(0), convexHull);
+
+    return convexHull;
+  }
+
+  private ArrayList<Point> filterAklToussaint(ArrayList<Point> points) {
+    return null;
+  }
+
+  private void quickHull(ArrayList<Point> points, Point p1, Point p2, ArrayList<Point> convexHull) {
+    int maxDistance = 0;
+    Point maxDistancePoint = null;
+
+    for (Point point : points) {
+      int distance = distancePointToLine(p1, p2, point);
+      if (distance > maxDistance) {
+        maxDistance = distance;
+        maxDistancePoint = point;
+      }
+    }
+
+    if (maxDistancePoint != null) {
+      convexHull.add(convexHull.indexOf(p2), maxDistancePoint);
+      ArrayList<Point> pointsLeftOfP1P2 = pointsLeftOfLine(p1, maxDistancePoint, points);
+      ArrayList<Point> pointsLeftOfP2P1 = pointsLeftOfLine(maxDistancePoint, p2, points);
+
+      quickHull(pointsLeftOfP1P2, p1, maxDistancePoint, convexHull);
+      quickHull(pointsLeftOfP2P1, maxDistancePoint, p2, convexHull);
+    }
+  }
+
+  private int distancePointToLine(Point p1, Point p2, Point point) {
+    return (int) (Math.abs((p2.y - p1.y) * point.x - (p2.x - p1.x) * point.y + p2.x * p1.y - p2.y * p1.x) / distance(p1, p2));
+  }
+
+  private double distance(Point p1, Point p2) {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+  }
+
+  private ArrayList<Point> pointsLeftOfLine(Point p1, Point p2, ArrayList<Point> points) {
+    ArrayList<Point> result = new ArrayList<>();
+    for (Point point : points) {
+      if (isLeftOfLine(p1, p2, point)) {
+        result.add(point);
+      }
+    }
+    return result;
+  }
+
+  private boolean isLeftOfLine(Point p1, Point p2, Point point) {
+    return ((p2.x - p1.x) * (point.y - p1.y) - (point.x - p1.x) * (p2.y - p1.y)) > 0;
+  }
+
+  // ...
+
+  private ArrayList<Point> exercice1(ArrayList<Point> points) {
+    if (points.size() < 4) return points;
+
+    ArrayList<Point> enveloppe = new ArrayList<Point>();
+
+    for (Point p : points) {
+      for (Point q : points) {
+        if (p.equals(q)) continue;
+        Point ref = p;
+        for (Point r : points) if (crossProduct(p, q, p, r) != 0) {
+          ref = r;
+          break;
+        }
+        if (ref.equals(p)) {
+          enveloppe.add(p);
+          enveloppe.add(q);
+          continue;
+        }
+        double signeRef = crossProduct(p, q, p, ref);
+        boolean estCote = true;
+        for (Point r : points) if (signeRef * crossProduct(p, q, p, r) < 0) {
+          estCote = false;
+          break;
+        } // ici sans le break le temps de calcul devient horrible
+        if (estCote) {
+          enveloppe.add(p);
+          enveloppe.add(q);
+        }
+      }
+    }
+
+    return enveloppe; // ici l'enveloppe n'est pas triée dans le sens trigonométrique, et contient des doublons, mais tant pis!
+  }
+
+  private double crossProduct(Point p, Point q, Point s, Point t) {
+    return ((q.x - p.x) * (t.y - s.y) - (q.y - p.y) * (t.x - s.x));
+  }
+}
